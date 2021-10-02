@@ -6,16 +6,18 @@ import NumericInput from '../../components/NumericInput'
 
 import styles from "./index.module.scss";
 
-import failSound from './sounds/fail.wav';
-import successSound from './sounds/sucess1.wav';
-import endSound from './sounds/end.mp3';
+import failSound from '../../assets/sounds/fail.wav';
+import successSound from '../../assets/sounds/sucess1.wav';
+import endSound from '../../assets/sounds/end.mp3';
+import tickSound from '../../assets/sounds/tick.flac';
 
-import heartFilled from './images/heart-filled.svg';
-import heartEmpty from './images/heart-empty.svg';
+import heartFilled from '../../assets/images/heart-filled.svg';
+import heartEmpty from '../../assets/images/heart-empty.svg';
 
 const MainModule = () => {
   const [stage, setStage] = useState('playing')
   const [op, setOp] = useState(null)
+  const [now, setNow] = useState(null)
   const [, setResponse] = useState(null)
   const [points, setPoints] = useState(0)
   const [lives, setLives] = useState(3)
@@ -25,6 +27,12 @@ const MainModule = () => {
   const [playFail] = useSound(failSound);
   const [playSuccess] = useSound(successSound);
   const [playEndSound] = useSound(endSound);
+  const [playTickSound] = useSound(tickSound);
+
+  useEffect(() => {
+    const pid = window.setInterval(() => setNow(Math.floor((new Date()).getTime() / 1000) * 1000), 100)
+    return () => window.clearInterval(pid)
+  }, [])
 
   const newOp = () => {
     const a = Math.floor(Math.random() * 10) + 1;
@@ -32,14 +40,16 @@ const MainModule = () => {
     const operation = 'x'
     const r = a * b;
     const difficulty = (a > 5 ? 2 : 1) + (b > 5 ? 2 : 1);
-    setResult('');
+    const expiresAt = (new Date()).getTime() + (15 * 1000);
     const o = {
       a,
       b,
       operation,
       result: r,
       difficulty,
+      expiresAt
     }
+    setResult('');
     setOp(o);
     if (!isMobile()) {
       window.setTimeout(() => {
@@ -60,7 +70,7 @@ const MainModule = () => {
   const endGame = () => {
     window.setTimeout(
       () => playEndSound()
-      , 500
+      , 1500
     );
 
     setStage('gameover');
@@ -80,8 +90,10 @@ const MainModule = () => {
   const isFail = () => {
     setPoints((s) => s - 1);
     setResponse(false);
+    if (lives > 1) {
+      playFail();
+    }
     decreaseLives();
-    playFail();
     newOp();
   }
   const compute = () => {
@@ -95,6 +107,15 @@ const MainModule = () => {
     }
   }
 
+  useEffect(() => {
+    if (op && stage === 'playing') {
+      playTickSound();
+    }
+    if (op && op.expiresAt && now >= op.expiresAt) {
+      isFail();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [now, op]);
 
   useEffect(() => {
     startGame();
@@ -154,7 +175,7 @@ const MainModule = () => {
                   if (e.key === 'Enter') { compute() }
                 }} />
           </div>
-
+          <div className={styles.timing}>{Math.floor((op.expiresAt - now) / 1000)}</div>
         </div>
         <div className={styles.input}>
           <NumericInput initialValue={result} maxLength={3} onChange={(value) => { console.log(value); setResult(value) }} onEnter={compute} />

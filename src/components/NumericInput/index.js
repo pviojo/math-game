@@ -72,7 +72,7 @@ const NumericInput = ({ maxLength, initialValue, onChange, onEnter }) => {
   }
   return (
     <div className={styles.cnt}
-      onKeyPress={
+      onTouchStart={
         (e) => {
           console.log(e);
           if (e.key === 'Enter') { onEnter(val) }
