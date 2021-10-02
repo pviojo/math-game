@@ -8,29 +8,36 @@ import styles from "./index.module.scss";
 
 import failSound from './sounds/fail.wav';
 import successSound from './sounds/sucess1.wav';
+import endSound from './sounds/end.mp3';
+
+import heartFilled from './images/heart-filled.svg';
+import heartEmpty from './images/heart-empty.svg';
 
 const MainModule = () => {
+  const [stage, setStage] = useState('playing')
   const [op, setOp] = useState(null)
   const [, setResponse] = useState(null)
   const [points, setPoints] = useState(0)
+  const [lives, setLives] = useState(3)
   const [result, setResult] = useState('');
   const inputRef = useRef();
 
   const [playFail] = useSound(failSound);
   const [playSuccess] = useSound(successSound);
+  const [playEndSound] = useSound(endSound);
 
   const newOp = () => {
     const a = Math.floor(Math.random() * 10) + 1;
     const b = Math.floor(Math.random() * 10) + 1;
     const operation = '*'
-    const result = a * b;
+    const r = a * b;
     const difficulty = (a > 5 ? 2 : 1) + (b > 5 ? 2 : 1);
     setResult('');
     const o = {
       a,
       b,
       operation,
-      result,
+      result: r,
       difficulty,
     }
     setOp(o);
@@ -43,6 +50,27 @@ const MainModule = () => {
     }
   }
 
+  const startGame = () => {
+    setPoints(0);
+    setLives(3);
+    newOp();
+    setStage('playing');
+  }
+
+  const endGame = () => {
+    window.setTimeout(
+      () => playEndSound()
+      , 500
+    );
+
+    setStage('gameover');
+  }
+  const decreaseLives = () => {
+    if (lives === 1) {
+      endGame();
+    }
+    setLives(s => s - 1)
+  }
   const isOk = () => {
     setPoints((s) => s + op.difficulty);
     setResponse(true);
@@ -52,6 +80,7 @@ const MainModule = () => {
   const isFail = () => {
     setPoints((s) => s - 1);
     setResponse(false);
+    decreaseLives();
     playFail();
     newOp();
   }
@@ -68,16 +97,35 @@ const MainModule = () => {
 
 
   useEffect(() => {
-    newOp();
-  }, []);
+    startGame();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-
+  if (stage === 'gameover') {
+    return (
+      <div className={`${styles.cnt} ${styles.gameover}`}>
+        <div>
+          <div className={styles.gameover}>Puntaje: {points}</div>
+          <div className={styles.button} onClick={startGame}>Empezar de nuevo</div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={styles.cnt}>
       <div className={styles.topbar}>
         <div className={styles.points}>
           Puntaje: {points}
         </div>
+        <div className={styles.lives}>
+          {[...Array(5 - lives).keys()].map(() =>
+            <img src={heartEmpty} style={{ opacity: .2 }} alt="" />
+          )}
+          {[...Array(lives).keys()].map(() =>
+            <img src={heartFilled} alt="" />
+          )}
+        </div>
+
       </div>
       {op && op.operation && (<>
         <div className={styles.display}>
@@ -97,6 +145,7 @@ const MainModule = () => {
           </div>
           <div className={styles.result}>
             <input value={result}
+              placeholder="?"
               disabled={isMobile()}
               ref={inputRef}
               onChange={e => setResult(e.target.value)}
@@ -108,7 +157,7 @@ const MainModule = () => {
 
         </div>
         <div className={styles.input}>
-          <NumericInput initialValue={result} onChange={(value) => setResult(value)} onEnter={compute} />
+          <NumericInput initialValue={result} maxLength={3} onChange={(value) => { console.log(value); setResult(value) }} onEnter={compute} />
         </div>
 
       </>)

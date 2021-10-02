@@ -12,11 +12,20 @@
     padding:10px;
     font-family: 'Orbitron', sans-serif;
     display:grid;
+    grid-template-columns: auto auto;
+
     :local(.points){
         text-align: left;
     }
     :local(.points){
         text-align: left;
+    }
+    :local(.lives){
+        text-align: right;
+        img{
+            width:20px;
+            margin:0 5px;
+        }
     }
     background:#444;
     color:#fff;
@@ -29,14 +38,14 @@
     margin: 20px;
     border-radius: 10px;
     display:grid;
-    gap:20px;
+    gap:15px;
     font-family: 'Orbitron', sans-serif;
     :local(.operation){
         display:grid;
         grid-template-columns: auto auto auto;
         align-items:center;
         justify-content:center;
-        gap: 20px;
+        gap: 25px;
     }
     :local(.operator1){
         text-align:right;
@@ -53,11 +62,14 @@
             max-width:400px;
             font-weight: 500;
             font-family: 'Orbitron', sans-serif;
-            border-bottom: 1px solid #999;
             outline: none;
             background: transparent;
+            color:#f69;
             &[disabled]{
-                color:inherit;
+                color:#f69;
+            }
+            &::placeholder{
+                color:#f69;
             }
         }
         background: transparent;
@@ -66,4 +78,25 @@
 }
 :local(.input){
     margin:0px -1px -1px;
+}
+
+:local(.gameover){
+    font-family: 'Orbitron', sans-serif;
+    grid-template-rows: 1fr;
+    padding:20px;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+
+}
+
+:local(.button){
+    background:#f69;
+    padding:20px;
+    color:#fff;
+    margin:0 auto;
+    border-radius:10px;
+    margin-top:20px;
+    width:100%;
+    text-align: center;
 }
