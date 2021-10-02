@@ -29,7 +29,7 @@ const MainModule = () => {
   const newOp = () => {
     const a = Math.floor(Math.random() * 10) + 1;
     const b = Math.floor(Math.random() * 10) + 1;
-    const operation = '*'
+    const operation = 'x'
     const r = a * b;
     const difficulty = (a > 5 ? 2 : 1) + (b > 5 ? 2 : 1);
     setResult('');
