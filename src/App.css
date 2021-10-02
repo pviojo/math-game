@@ -2,11 +2,26 @@
   box-sizing: border-box;
 }
 body{
-  background:#f5f5f5;
+  
 }
 .App {
-  max-width: 800px;
+  background:#f5f5f5;
+  position:relative;
   width:100%; 
-  margin:0 auto;
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
   font-family: 'Roboto', sans-serif;
+}
+
+@media (min-width: 600px){
+  .App{
+    height:calc(100% - 40px);
+    left:50%;
+    border:1px solid #ccc;
+    margin:20px auto 20px -300px;
+    max-width: 600px;
+  }
 }
