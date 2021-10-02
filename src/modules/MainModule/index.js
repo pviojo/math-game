@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import useSound from "use-sound";
+import isMobile from 'is-mobile';
 
 import NumericInput from '../../components/NumericInput'
 
@@ -33,11 +34,13 @@ const MainModule = () => {
       difficulty,
     }
     setOp(o);
-    window.setTimeout(() => {
-      if (inputRef && inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, 100);
+    if (!isMobile()) {
+      window.setTimeout(() => {
+        if (inputRef && inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+    }
   }
 
   const isOk = () => {
@@ -94,6 +97,7 @@ const MainModule = () => {
           </div>
           <div className={styles.result}>
             <input value={result}
+              disabled={isMobile()}
               ref={inputRef}
               onChange={e => setResult(e.target.value)}
               onKeyDown={
