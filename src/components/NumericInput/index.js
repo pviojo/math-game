@@ -2,7 +2,27 @@ import React, { useEffect, useState } from "react"
 
 import styles from "./index.module.scss";
 
-import useGlobalKeyDown from 'react-global-key-down-hook'
+const useGlobalKeyDown = (
+  callBack,
+  key,
+  disabled
+) => {
+  const handleKeyDown = ({ key: pressedKey }) => {
+    if (key instanceof Array) {
+      if (!key.includes(pressedKey)) return
+    } else {
+      if (key !== '_all' && key !== pressedKey) return
+    }
+
+    callBack(pressedKey)
+  }
+
+  useEffect(() => {
+    if (disabled) return
+    document.addEventListener('keydown', handleKeyDown, false)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  })
+}
 
 const NumericInput = ({ onChange, onEnter, initialValue }) => {
   const [val, setVal] = useState(initialValue);

@@ -10,7 +10,7 @@ import successSound from './sounds/sucess1.wav';
 
 const MainModule = () => {
   const [op, setOp] = useState(null)
-  const [response, setResponse] = useState(null)
+  const [, setResponse] = useState(null)
   const [points, setPoints] = useState(0)
   const [result, setResult] = useState('');
   const inputRef = useRef();
