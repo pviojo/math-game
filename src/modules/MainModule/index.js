@@ -10,6 +10,7 @@ import failSound from '../../assets/sounds/fail.wav';
 import successSound from '../../assets/sounds/sucess1.wav';
 import endSound from '../../assets/sounds/end.mp3';
 import tickSound from '../../assets/sounds/tick.flac';
+import passLevelSound from '../../assets/sounds/passLevel.ogg';
 
 import heartFilled from '../../assets/images/heart-filled.svg';
 import heartEmpty from '../../assets/images/heart-empty.svg';
@@ -54,6 +55,7 @@ const MainModule = () => {
   const [playSuccess] = useSound(successSound);
   const [playEndSound] = useSound(endSound);
   const [playTickSound] = useSound(tickSound);
+  const [playPassLevelSound] = useSound(passLevelSound);
 
   useGlobalKeyDown(() => {
     if (stage === 'playing') {
@@ -161,6 +163,7 @@ const MainModule = () => {
     setStepsInLevel(s => s === (m - 1) ? 0 : s + 1)
     if (stepsInLevel === (m - 1)) {
       setLevel(s => s + 1)
+      playPassLevelSound();
       increaseLives();
     }
   }
@@ -186,8 +189,10 @@ const MainModule = () => {
     setStage('paused');
     setPoints((s) => s + op.difficulty);
     setResponse(true);
-    playSuccess();
     moveToNextStep();
+    if (stepsInLevel < 9) {
+      playSuccess();
+    }
     window.setTimeout(
       () => newOp()
       , 1000);
