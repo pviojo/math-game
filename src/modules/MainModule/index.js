@@ -118,7 +118,33 @@ const MainModule = () => {
     setStage('playing');
   }
 
+  const persistState = () => {
+    const st = {
+      operation,
+      level,
+      stepsInLevel,
+      points,
+    }
+    localStorage.setItem('__current', JSON.stringify(st))
+  }
+  const storeOpResult = (op, status) => {
+    let ops = []
+    try {
+      ops = JSON.parse(localStorage.getItem('__current_ops'));
+      if (!ops) {
+        ops = [];
+      }
+    } catch (e) {
+      ops = [];
+    }
+    console.log(ops)
+    ops.push({ ...op, status });
+    localStorage.setItem('__current_ops', JSON.stringify(ops))
+  }
+
   const startGame = (operation) => {
+    localStorage.removeItem('__current');
+    localStorage.removeItem('__current_ops');
     setOperation(operation)
     setLevel(1);
     setStepsInLevel(0);
@@ -166,7 +192,9 @@ const MainModule = () => {
       isOk();
     }
   }
+
   const isOk = () => {
+    storeOpResult(op, true);
     setStage('paused');
     setPoints((s) => s + op.difficulty);
     setResponse(true);
@@ -179,6 +207,7 @@ const MainModule = () => {
       , 1000);
   }
   const isFail = () => {
+    storeOpResult(op, false);
     setPoints((s) => Math.max(s - 1, 0));
     setResponse(false);
     const keepPlaying = lives > 1
@@ -227,15 +256,20 @@ const MainModule = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result])
 
+  useEffect(() => {
+    persistState({
+      operation, level, stepsInLevel, points
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [operation, level, stepsInLevel, points])
+
   if (stage === 'home') {
     return (
       <div className={`${styles.cnt} ${styles.home}`}>
         <div>
           <div>¡Responde las preguntas lo más rápido posible y gana!</div>
           <br />
-          <br />
           <div><small>Elige una opción para empezar a jugar</small></div>
-          <br />
           <br />
           <div className={styles.button} onClick={() => startGame('+')}>Sumas</div>
           <div className={styles.button} onClick={() => startGame('-')}>Restas</div>

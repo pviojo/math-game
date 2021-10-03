@@ -133,6 +133,8 @@
 :local(.gameover),
 :local(.home)
 {
+    line-height: 200%;
+
     background: #fff;
     font-family: 'Orbitron', sans-serif;
     grid-template-rows: 1fr;
