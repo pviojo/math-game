@@ -182,7 +182,10 @@ const MainModule = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => { checkIsOk(); }, [result])
+  useEffect(() => {
+    checkIsOk();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result])
 
   if (stage === 'gameover') {
     return (
