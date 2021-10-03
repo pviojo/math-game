@@ -13,6 +13,7 @@ import tickSound from '../../assets/sounds/tick.flac';
 
 import heartFilled from '../../assets/images/heart-filled.svg';
 import heartEmpty from '../../assets/images/heart-empty.svg';
+import catEnd from '../../assets/images/cat.gif';
 
 const useGlobalKeyDown = (
   callBack,
@@ -37,7 +38,8 @@ const useGlobalKeyDown = (
 }
 
 const MainModule = () => {
-  const [stage, setStage] = useState('playing')
+  const [stage, setStage] = useState('home')
+  const [operation, setOperation] = useState('+')
   const [op, setOp] = useState(null)
   const [now, setNow] = useState(null)
   const [, setResponse] = useState(null)
@@ -65,31 +67,58 @@ const MainModule = () => {
     return () => window.clearInterval(pid)
   }, [])
 
-  const newOp = () => {
-    const max = Math.min(4 + ((level - 1) * 2), 10)
+  const newOp = (operationType = null) => {
+    if (!operationType) {
+      operationType = operation
+    }
+    const max = Math.min((operationType === '*' ? 4 : 8) + ((level - 1) * 2), 10)
     let a = 1;
     let b = 1;
+    let operationSymbol = null
+    let r = null;
     while (true) {
-      a = Math.floor(Math.random() * max) + 1;
-      if (!op || (a !== op.a && a !== op.b)) {
+      while (true) {
+        a = Math.floor(Math.random() * max) + 1;
+        if (!op || (a !== op.a && a !== op.b)) {
+          break;
+        }
+      }
+      while (true) {
+        b = Math.floor(Math.random() * max) + 1;
+        if (!op || (b !== op.a && b !== op.b)) {
+          break;
+        }
+      }
+      switch (operationType) {
+        case '+':
+          r = a + b;
+          operationSymbol = '+';
+          break;
+        case '-':
+          r = a - b;
+          operationSymbol = '-';
+          break;
+
+        case '*':
+        default:
+          r = a * b;
+          operationSymbol = 'x';
+          break;
+
+      }
+      if (operationType !== '-') {
+        break;
+      } else if (r > 0) {
         break;
       }
     }
-    while (true) {
-      b = Math.floor(Math.random() * max) + 1;
-      if (!op || (b !== op.a && b !== op.b)) {
-        break;
-      }
-    }
-    const operation = 'x'
-    const r = a * b;
     const difficulty = (a > 5 ? 2 : 1) + (b > 5 ? 2 : 1);
     const seconds = Math.max(15 - (parseInt(level - 1) * 2), 5);
     const expiresAt = (new Date()).getTime() + (seconds * 1000);
     const o = {
       a,
       b,
-      operation,
+      operation: operationSymbol,
       result: r,
       difficulty,
       expiresAt
@@ -106,20 +135,25 @@ const MainModule = () => {
     setStage('playing');
   }
 
-  const startGame = () => {
+  const startGame = (operation) => {
+    setOperation(operation)
     setPoints(0);
     setLives(3);
-    newOp();
-    setStage('playing');
+    newOp(operation);
+
+  }
+  const goHome = () => {
+    setStage('home');
   }
 
   const endGame = () => {
+    setStage('gameover');
     window.setTimeout(
       () => playEndSound()
-      , 1500
+      , 200
     );
 
-    setStage('gameover');
+
   }
   const moveToNextStep = () => {
     console.log('moveToNextStep')
@@ -134,6 +168,7 @@ const MainModule = () => {
     setLives(s => Math.min(s + 1, 5))
   }
   const decreaseLives = () => {
+    console.log('lives', lives)
     if (lives === 1) {
       endGame();
     }
@@ -160,14 +195,19 @@ const MainModule = () => {
   const isFail = () => {
     setPoints((s) => Math.max(s - 1, 0));
     setResponse(false);
-    if (lives > 1) {
-      playFail();
-    }
+    const keepPlaying = lives > 1
     decreaseLives();
-    setStepsInLevel(0)
-    newOp();
+    setStepsInLevel(0);
+    if (keepPlaying) {
+      playFail();
+      newOp();
+    }
+
   }
   const compute = () => {
+    if (stage !== 'playing') {
+      return;
+    }
     if (!op || !result) {
       return;
     }
@@ -179,7 +219,6 @@ const MainModule = () => {
   }
 
   useEffect(() => {
-    console.log(op, stage, result)
     if (op && stage === 'playing') {
       if (op && op.expiresAt && now >= op.expiresAt - 5000) {
         playTickSound();
@@ -196,24 +235,32 @@ const MainModule = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now, op]);
 
-  useEffect(() => {
-    startGame();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   useEffect(() => {
     checkIsOk();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result])
 
+  if (stage === 'home') {
+    return (
+      <div className={`${styles.cnt} ${styles.gameover}`}>
+        <div>
+          <div className={styles.button} onClick={() => startGame('+')}>Sumas</div>
+          <div className={styles.button} onClick={() => startGame('-')}>Restas</div>
+          <div className={styles.button} onClick={() => startGame('*')}>Multiplicaciones</div>
+        </div>
+      </div>
+    );
+  }
   if (stage === 'gameover') {
     return (
       <div className={`${styles.cnt} ${styles.gameover}`}>
         <div>
+          <img src={catEnd} alt="" />
           <div className={styles.gameover}>Puntaje: {points}</div>
-          <div className={styles.button} onClick={startGame}>Empezar de nuevo</div>
+          <div className={styles.button} onClick={goHome}>Volver al comienzo</div>
         </div>
-      </div>
+      </div >
     );
   }
   return (
@@ -271,6 +318,7 @@ const MainModule = () => {
               }}
             />
           </div>
+          <div className={styles.exit} onClick={goHome}>✖</div>
           {stage === 'playing' ?
             <div className={styles.timing}>{Math.floor((op.expiresAt - now) / 1000)}</div>
             : ''

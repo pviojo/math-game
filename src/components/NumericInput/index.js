@@ -67,7 +67,7 @@ const NumericInput = ({ maxLength, initialValue, onChange, onEnter }) => {
         {getButton(9, 'digit')}
         {getButton('⌫', 'delete')}
         {getButton('0', 'digit')}
-        {getButton('Listo', 'enter', { background: '#f69', color: '#fff' })}
+        {getButton('Listo', 'enter', { background: '#c49', color: '#fff' })}
       </div>
     </div>)
 }
