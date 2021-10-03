@@ -14,12 +14,36 @@ import tickSound from '../../assets/sounds/tick.flac';
 import heartFilled from '../../assets/images/heart-filled.svg';
 import heartEmpty from '../../assets/images/heart-empty.svg';
 
+const useGlobalKeyDown = (
+  callBack,
+  key,
+  disabled
+) => {
+  const handleKeyDown = ({ key: pressedKey }) => {
+    if (key instanceof Array) {
+      if (!key.includes(pressedKey)) return
+    } else {
+      if (key !== '_all' && key !== pressedKey) return
+    }
+
+    callBack(pressedKey)
+  }
+
+  useEffect(() => {
+    if (disabled) return
+    document.addEventListener('keydown', handleKeyDown, false)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  })
+}
+
 const MainModule = () => {
   const [stage, setStage] = useState('playing')
   const [op, setOp] = useState(null)
   const [now, setNow] = useState(null)
   const [, setResponse] = useState(null)
   const [points, setPoints] = useState(0)
+  const [level, setLevel] = useState(1)
+  const [stepsInLevel, setStepsInLevel] = useState(0)
   const [lives, setLives] = useState(3)
   const [result, setResult] = useState('');
   const inputRef = useRef();
@@ -28,6 +52,13 @@ const MainModule = () => {
   const [playSuccess] = useSound(successSound);
   const [playEndSound] = useSound(endSound);
   const [playTickSound] = useSound(tickSound);
+
+  useGlobalKeyDown(() => {
+    if (stage === 'playing') {
+      compute();
+    }
+  }, 'Enter');
+
 
   useEffect(() => {
     const pid = window.setInterval(() => setNow(Math.floor((new Date()).getTime() / 1000) * 1000), 100)
@@ -58,6 +89,7 @@ const MainModule = () => {
         }
       }, 100);
     }
+    setStage('playing');
   }
 
   const startGame = () => {
@@ -75,25 +107,50 @@ const MainModule = () => {
 
     setStage('gameover');
   }
+  const moveToNextStep = () => {
+    console.log('moveToNextStep')
+    const m = 10;
+    setStepsInLevel(s => s === (m - 1) ? 0 : s + 1)
+    if (stepsInLevel === (m - 1)) {
+      setLevel(s => s + 1)
+      increaseLives();
+    }
+  }
+  const increaseLives = () => {
+    setLives(s => Math.min(s + 1, 5))
+  }
   const decreaseLives = () => {
     if (lives === 1) {
       endGame();
     }
     setLives(s => s - 1)
   }
+  const checkIsOk = () => {
+    if (!op || !result) {
+      return;
+    }
+    if (parseInt(result) === op.result) {
+      isOk();
+    }
+  }
   const isOk = () => {
+    setStage('paused');
     setPoints((s) => s + op.difficulty);
     setResponse(true);
     playSuccess();
-    newOp();
+    moveToNextStep();
+    window.setTimeout(
+      () => newOp()
+      , 1000);
   }
   const isFail = () => {
-    setPoints((s) => s - 1);
+    setPoints((s) => Math.max(s - 1, 0));
     setResponse(false);
     if (lives > 1) {
       playFail();
     }
     decreaseLives();
+    setStepsInLevel(0)
     newOp();
   }
   const compute = () => {
@@ -109,10 +166,13 @@ const MainModule = () => {
 
   useEffect(() => {
     if (op && stage === 'playing') {
-      playTickSound();
-    }
-    if (op && op.expiresAt && now >= op.expiresAt) {
-      isFail();
+      if (op && op.expiresAt && now >= op.expiresAt - 5000) {
+        playTickSound();
+      }
+
+      if (op.expiresAt && now >= op.expiresAt) {
+        compute()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now, op]);
@@ -121,6 +181,8 @@ const MainModule = () => {
     startGame();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => { checkIsOk(); }, [result])
 
   if (stage === 'gameover') {
     return (
@@ -148,6 +210,18 @@ const MainModule = () => {
         </div>
 
       </div>
+      <div className={styles.levelbar}>
+        <div className={styles.level}>
+          Nivel: {level}
+        </div>
+        <div className={styles.lives}>
+          {[...Array(stepsInLevel).keys()].map(() =>
+            <span className={styles.stepInLevel} />
+          )}
+
+        </div>
+
+      </div>
       {op && op.operation && (<>
         <div className={styles.display}>
           <div className={styles.operation}>
@@ -169,13 +243,15 @@ const MainModule = () => {
               placeholder="?"
               disabled={isMobile()}
               ref={inputRef}
-              onChange={e => setResult(e.target.value)}
-              onKeyDown={
-                (e) => {
-                  if (e.key === 'Enter') { compute() }
-                }} />
+              onChange={e => {
+                setResult(e.target.value)
+              }}
+            />
           </div>
-          <div className={styles.timing}>{Math.floor((op.expiresAt - now) / 1000)}</div>
+          {stage === 'playing' ?
+            <div className={styles.timing}>{Math.floor((op.expiresAt - now) / 1000)}</div>
+            : ''
+          }
         </div>
         <div className={styles.input}>
           <NumericInput initialValue={result} maxLength={3} onChange={(value) => { console.log(value); setResult(value) }} onEnter={compute} />
