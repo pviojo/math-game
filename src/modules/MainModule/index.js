@@ -139,6 +139,8 @@ const MainModule = () => {
 
   const startGame = (operation) => {
     setOperation(operation)
+    setLevel(1);
+    setStepsInLevel(0);
     setPoints(0);
     setLives(3);
     newOp(operation);
