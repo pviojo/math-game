@@ -81,13 +81,13 @@ const MainModule = () => {
     while (true) {
       while (true) {
         a = Math.floor(Math.random() * max) + 1;
-        if (!op || (a !== op.a && a !== op.b)) {
+        if (!op || (a !== op.a)) {
           break;
         }
       }
       while (true) {
         b = Math.floor(Math.random() * max) + 1;
-        if (!op || (b !== op.a && b !== op.b)) {
+        if (!op || (b !== op.b)) {
           break;
         }
       }
