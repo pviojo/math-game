@@ -66,12 +66,26 @@ const MainModule = () => {
   }, [])
 
   const newOp = () => {
-    const a = Math.floor(Math.random() * 10) + 1;
-    const b = Math.floor(Math.random() * 10) + 1;
+    const max = Math.min(4 + ((level - 1) * 2), 10)
+    let a = 1;
+    let b = 1;
+    while (true) {
+      a = Math.floor(Math.random() * max) + 1;
+      if (!op || (a !== op.a && a !== op.b)) {
+        break;
+      }
+    }
+    while (true) {
+      b = Math.floor(Math.random() * max) + 1;
+      if (!op || (b !== op.a && b !== op.b)) {
+        break;
+      }
+    }
     const operation = 'x'
     const r = a * b;
     const difficulty = (a > 5 ? 2 : 1) + (b > 5 ? 2 : 1);
-    const expiresAt = (new Date()).getTime() + (15 * 1000);
+    const seconds = Math.max(15 - (parseInt(level - 1) * 2), 5);
+    const expiresAt = (new Date()).getTime() + (seconds * 1000);
     const o = {
       a,
       b,
@@ -165,13 +179,18 @@ const MainModule = () => {
   }
 
   useEffect(() => {
+    console.log(op, stage, result)
     if (op && stage === 'playing') {
       if (op && op.expiresAt && now >= op.expiresAt - 5000) {
         playTickSound();
       }
 
       if (op.expiresAt && now >= op.expiresAt) {
-        compute()
+        if (!result) {
+          isFail();
+        } else {
+          compute()
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,12 +236,13 @@ const MainModule = () => {
         <div className={styles.level}>
           Nivel: {level}
         </div>
-        <div className={styles.lives}>
-          {[...Array(stepsInLevel).keys()].map(() =>
-            <span className={styles.stepInLevel} />
-          )}
+        {[...Array(stepsInLevel).keys()].map(() =>
+          <span className={styles.stepInLevel} />
+        )}
+        {[...Array(10 - stepsInLevel).keys()].map(() =>
+          <span className={`${styles.stepInLevel} ${styles.empty}`} />
+        )}
 
-        </div>
 
       </div>
       {op && op.operation && (<>
