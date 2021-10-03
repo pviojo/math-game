@@ -16,27 +16,8 @@ import heartFilled from '../../assets/images/heart-filled.svg';
 import heartEmpty from '../../assets/images/heart-empty.svg';
 import catEnd from '../../assets/images/cat.gif';
 
-const useGlobalKeyDown = (
-  callBack,
-  key,
-  disabled
-) => {
-  const handleKeyDown = ({ key: pressedKey }) => {
-    if (key instanceof Array) {
-      if (!key.includes(pressedKey)) return
-    } else {
-      if (key !== '_all' && key !== pressedKey) return
-    }
+import useGlobalKeyDown from '../../hooks/useGlobalKeyDown';
 
-    callBack(pressedKey)
-  }
-
-  useEffect(() => {
-    if (disabled) return
-    document.addEventListener('keydown', handleKeyDown, false)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  })
-}
 
 const MainModule = () => {
   const [stage, setStage] = useState('home')
@@ -160,7 +141,6 @@ const MainModule = () => {
 
   }
   const moveToNextStep = () => {
-    console.log('moveToNextStep')
     const m = 10;
     setStepsInLevel(s => s === (m - 1) ? 0 : s + 1)
     if (stepsInLevel === (m - 1)) {
@@ -173,7 +153,6 @@ const MainModule = () => {
     setLives(s => Math.min(s + 1, 5))
   }
   const decreaseLives = () => {
-    console.log('lives', lives)
     if (lives === 1) {
       endGame();
     }
@@ -250,8 +229,14 @@ const MainModule = () => {
 
   if (stage === 'home') {
     return (
-      <div className={`${styles.cnt} ${styles.gameover}`}>
+      <div className={`${styles.cnt} ${styles.home}`}>
         <div>
+          <div>¡Responde las preguntas lo más rápido posible y gana!</div>
+          <br />
+          <br />
+          <div><small>Elige una opción para empezar a jugar</small></div>
+          <br />
+          <br />
           <div className={styles.button} onClick={() => startGame('+')}>Sumas</div>
           <div className={styles.button} onClick={() => startGame('-')}>Restas</div>
           <div className={styles.button} onClick={() => startGame('*')}>Multiplicaciones</div>
@@ -332,7 +317,7 @@ const MainModule = () => {
           }
         </div>
         <div className={styles.input}>
-          <NumericInput initialValue={result} maxLength={3} onChange={(value) => { console.log(value); setResult(value) }} onEnter={compute} />
+          <NumericInput initialValue={result} maxLength={3} onChange={(value) => { setResult(value) }} onEnter={compute} />
         </div>
 
       </>)

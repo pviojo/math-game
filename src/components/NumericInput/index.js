@@ -47,15 +47,8 @@ const NumericInput = ({ maxLength, initialValue, onChange, onEnter }) => {
     }} />
   }
   return (
-    <div className={styles.cnt}
-      onTouchStart={
-        (e) => {
-          console.log(e);
-          if (e.key === 'Enter') { onEnter(val) }
-        }}>
-      <div
-        className={styles.digits}
-      >
+    <div className={styles.cnt}>
+      <div className={styles.digits}>
         {getButton(1, 'digit')}
         {getButton(2, 'digit')}
         {getButton(3, 'digit')}
@@ -67,9 +60,9 @@ const NumericInput = ({ maxLength, initialValue, onChange, onEnter }) => {
         {getButton(9, 'digit')}
         {getButton('⌫', 'delete')}
         {getButton('0', 'digit')}
-        {getButton('Listo', 'enter', { background: '#c49', color: '#fff' })}
+        {getButton('Listo', 'enter', { background: '#e066b1', color: '#fff' })}
       </div>
-    </div>)
+    </div >)
 }
 
 NumericInput.defaultProps = {
